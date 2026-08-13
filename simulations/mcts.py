@@ -49,7 +49,9 @@ decoder_card_offset = decoder_attack_offset + attack_count # First index of Card
 decoder_size = decoder_card_offset + (1 + decoder_main_feature + SelectContext.RECOVER_SPECIAL_CONDITION) * card_count # Decoder input vocabulary size
 
 SEARCH_COUNT = 10 # MCTS Search count
-
+def load_deck(filename):
+    with open(filename, "r", encoding="utf-8") as f:
+        return [int(line.strip()) for line in f if line.strip()]
 # Decoder Layer of MyModel
 class DecoderLayer(torch.nn.Module):
     def __init__(self, d_model: int, num_heads: int, d_feedforward: int):
@@ -550,8 +552,8 @@ def progress(count: int, text: str):
         current += 1
 
 # A sample deck for training.
-sample_deck = [721,721,722,722,722,722,723,723,723,723,1092,1121,1121,1145,1145,1163,1163,1219,1219,1219,1219,1227,1227,1227,1227,1262,1262,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]
-
+'''sample_deck = [721,721,722,722,722,722,723,723,723,723,1092,1121,1121,1145,1145,1163,1163,1219,1219,1219,1219,1227,1227,1227,1227,1262,1262,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3]'''
+sample_deck = load_deck("./decks/Dragapult/deck.csv")
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = MyModel(128, 2, 256, 1, 1)
 model = model.to(device)

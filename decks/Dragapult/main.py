@@ -11,9 +11,12 @@ This deck focuses on setting up multiple knockouts to take at least three Prize 
 """
 
 # Load deck.csv in the dataset
-file_path = "deck.csv"
+file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
+
+"""file_path = "deck.csv"
 if not os.path.exists(file_path):
     file_path = "/kaggle_simulations/agent/" + file_path
+"""
 with open(file_path, "r") as file:
     csv = file.read().split("\n")
 my_deck = []
