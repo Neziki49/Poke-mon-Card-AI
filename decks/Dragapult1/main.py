@@ -11,12 +11,11 @@ This deck focuses on setting up multiple knockouts to take at least three Prize 
 """
 
 # Load deck.csv in the dataset
-file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
 
-"""file_path = "deck.csv"
+
+file_path = "deck.csv"
 if not os.path.exists(file_path):
     file_path = "/kaggle_simulations/agent/" + file_path
-"""
 with open(file_path, "r") as file:
     csv = file.read().split("\n")
 my_deck = []
@@ -109,7 +108,7 @@ def prize_count(pokemon: Pokemon, is_attack_damage: bool) -> int:
 def pokemon_score(pokemon: Pokemon, is_attack_damage: bool) -> int:
     """Heuristically evaluates the tactical worth of targeting a specific Pokémon on the opponent's field."""
     data = card_table[pokemon.id]
-    score = prize_count(pokemon, is_attack_damage) * 1000
+    score = prize_count(pokemon, is_attack_damage) * 10000
     score += len(pokemon.energies) * 150
     score += len(pokemon.tools) * 100
     if data.stage2:
@@ -266,15 +265,14 @@ def main_option_proc(obs: Observation, damage: int):
                     prize += prize_count(cards[index], False)
                     score += pokemon_score(cards[index], False)
                 if remain_prize <= prize:
-                    score = 50000
+                    score = 1000000
                 else:
-                    if prize >= 2:
-                        if remain_prize <= 4:
-                            score -= 1200
+                    if prize >= 3:
+                        score += 50000
+                    elif prize == 2:
+                        score += 20000
                     elif prize == 1:
-                        score -= 300
-                    else:
-                        score += 1200
+                        score += 0
                 if max_score < score:
                     max_score = score
                     ci = indices
@@ -797,14 +795,8 @@ def agent(obs_dict: dict) -> list[int]:
                 else:
                     score = -1
             elif card.id == Ultra_Ball:
-                if can_evolve_dreepy and hand_counts[Dragapult_ex] == 0:
-                    score = 35000
-                elif can_evolve_drakloak and hand_counts[Dragapult_ex] == 0:
-                    score = 30000
-                elif main_pokemon_count <= 2:
-                    socre = 15000
-                elif field_counts[Dreepy] >= 1:
-                    socre = 8000
+                if negative_hand_count >= 2:
+                    score = 44000
                 else:
                     score = -1
             elif card.id == Poke_Pad:

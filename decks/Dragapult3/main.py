@@ -11,12 +11,11 @@ This deck focuses on setting up multiple knockouts to take at least three Prize 
 """
 
 # Load deck.csv in the dataset
-file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
 
-"""file_path = "deck.csv"
+
+file_path = "deck.csv"
 if not os.path.exists(file_path):
     file_path = "/kaggle_simulations/agent/" + file_path
-"""
 with open(file_path, "r") as file:
     csv = file.read().split("\n")
 my_deck = []
@@ -774,19 +773,11 @@ def agent(obs_dict: dict) -> list[int]:
                     score = -1
             elif card.id == Crushing_Hammer:
                 score = 40000
-            elif id == Boss_Orders:
-                if plan_a.attack > 0:
-                    target = op_state.bench[plan_a.attack - 1]
-
-                # Bossで呼んできた相手をKOできる
-                if target.hp <= damage:
-                    score = 80000
-
-                # 2 Prize以上ならさらに強く評価
-                    score += prize_count(target, True) * 20000
-
+            elif card.id == Boss_Orders:
+                if card.id == use_support:
+                    score = 35000
                 else:
-                    score = 30000
+                    score = -1
             elif card.id == Lillie_Determination:
                 if card.id == use_support:
                     score = 14000

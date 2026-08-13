@@ -11,12 +11,10 @@ This deck focuses on setting up multiple knockouts to take at least three Prize 
 """
 
 # Load deck.csv in the dataset
-file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
 
-"""file_path = "deck.csv"
+file_path = "deck.csv"
 if not os.path.exists(file_path):
     file_path = "/kaggle_simulations/agent/" + file_path
-"""
 with open(file_path, "r") as file:
     csv = file.read().split("\n")
 my_deck = []
@@ -107,33 +105,23 @@ def prize_count(pokemon: Pokemon, is_attack_damage: bool) -> int:
 
 
 def pokemon_score(pokemon: Pokemon, is_attack_damage: bool) -> int:
-    """Heuristically evaluates the tactical worth of targeting a specific Pokémon."""
+    """Heuristically evaluates the tactical worth of targeting a specific Pokémon on the opponent's field."""
     data = card_table[pokemon.id]
-
-    prize = prize_count(pokemon, is_attack_damage)
-
-    # Prize枚数を最重要視
-    score = prize * 1500
-
-    # エネルギー・道具が多いポケモンは盤面への影響が大きい
-    score += len(pokemon.energies) * 200
-    score += len(pokemon.tools) * 150
-
+    score = prize_count(pokemon, is_attack_damage) * 1000
+    score += len(pokemon.energies) * 150
+    score += len(pokemon.tools) * 100
     if data.stage2:
-        score += 400
+        score += 250
     elif data.stage1:
-        score += 200
-
-    # 重要なシステムポケモン
-    if pokemon.id in (173, 174, 190, 1071):
-        score -= 300
-
-    if pokemon.id == 112 and len(pokemon.energies) >= 1:
-        score += 400
-
-    # HPが高いほど盤面価値は高い
+        score += 130
+    
+    id = pokemon.id
+    # Noctowl, Fan Rotom, Archaludon ex, Meowth ex
+    if id == 173 or id == 174 or id == 190 or id == 1071:
+        score -= 200
+    if id == 112 and len(pokemon.energies) >= 1:  # Munkidori
+        score += 300
     score += pokemon.hp
-
     return score
 
 
@@ -440,6 +428,8 @@ def agent(obs_dict: dict) -> list[int]:
         elif energy_count == 1:
             if attach_id == pokemon.energyCards[0].id:
                 return -1
+            if active and pokemon.id == Drakloak and can_attack:
+                score += 1000
             if pokemon.id == Dragapult_ex:
                 score += 250
             elif pokemon.id == Dreepy:
@@ -469,7 +459,7 @@ def agent(obs_dict: dict) -> list[int]:
         score = 0
         if id == Dreepy:
             if main_pokemon_count >= 3:
-                score = 1000
+                score = UNNECESSARY
             else:
                 score = 18000
         elif id == Drakloak:
@@ -663,7 +653,10 @@ def agent(obs_dict: dict) -> list[int]:
                     # Selection of the Pokémon to send to the Active Spot
                     if o.playerIndex == my_index:
                         if card.id == Dreepy:
-                            score += 10000
+                            if main_pokemon_count >= 3:
+                                score = -1
+                            else:
+                                score = 51000
                         elif card.id == Drakloak:
                             if energy_count >= 1:
                                 score += 20000
@@ -747,13 +740,15 @@ def agent(obs_dict: dict) -> list[int]:
             if card.id == Dreepy:
                 score = 51000
             elif card.id == Fezandipiti_ex:
-                if card_score > 0:
-                    score = 53000
+                if card_score >= 0 and field_counts[Fezandipiti_ex] == 0:
+                    score = 60000
                 else:
                     score = -1
             elif card.id == Latias_ex:
                 if active_id != Drakloak and active_id != Dragapult_ex:
                     score = 51000
+                elif main_pokemon_count <= 1:
+                    score = 50000
                 else:
                     score = -1
             elif card.id == Budew:
@@ -764,9 +759,9 @@ def agent(obs_dict: dict) -> list[int]:
             elif card.id == Meowth_ex:
                 if state.supporterPlayed or stadium_id == Team_Rocket_Watchtower:
                     score = -1
-                elif support_count == 0:
+                elif support_count == 0 or support_count == hand_counts[Boss_Orders] and not plan_a.attack <= 0:
                     score = 50000
-                elif support_count == hand_counts[Boss_Orders] and not plan_a.attack <= 0:
+                elif main_pokemon_count <= 1:
                     score = 50000
                 else:
                     score = -1
@@ -802,13 +797,20 @@ def agent(obs_dict: dict) -> list[int]:
             elif no_draw:
                 score = -1
             elif card.id == Buddy_Buddy_Poffin:
-                if deck_counts[Dreepy] > 0:
-                    score = 46000
-                else:
-                    score = -1
+                if main_pokemon_count < 3:
+                    if deck_counts[Dreepy] > 0:
+                        score = 46000
+                    else:
+                        score = -1
             elif card.id == Ultra_Ball:
-                if negative_hand_count >= 2:
-                    score = 44000
+                if can_evolve_dreepy and hand_counts[Dragapult_ex] == 0:
+                    score = 35000
+                elif can_evolve_drakloak and hand_counts[Dragapult_ex] == 0:
+                    score = 30000
+                elif main_pokemon_count <= 2:
+                    score = 15000
+                elif field_counts[Dreepy] >= 1:
+                    score = 8000
                 else:
                     score = -1
             elif card.id == Poke_Pad:

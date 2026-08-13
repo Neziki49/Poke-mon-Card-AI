@@ -11,12 +11,11 @@ This deck focuses on setting up multiple knockouts to take at least three Prize 
 """
 
 # Load deck.csv in the dataset
-file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
 
-"""file_path = "deck.csv"
+
+file_path = "deck.csv"
 if not os.path.exists(file_path):
     file_path = "/kaggle_simulations/agent/" + file_path
-"""
 with open(file_path, "r") as file:
     csv = file.read().split("\n")
 my_deck = []
@@ -247,28 +246,11 @@ def main_option_proc(obs: Observation, damage: int):
     for i, pokemon in enumerate(cards):
         base_prize_count = 0
         base_score = pokemon_score(pokemon, True)
-
         active_damage = 0 if no_damage_dex(pokemon.id) else damage
-
-        # ActiveをKOできる場合
         if pokemon.hp <= active_damage:
             base_prize_count += prize_count(pokemon, True)
-
-            # KOは非常に大きな価値
-            base_score += 50000
-
-            # 2 Prize / 3 Prizeならさらに評価
-            base_score += prize_count(pokemon, True) * 20000
-
-        # KOできない場合
         else:
-            damage_ratio = active_damage / pokemon.hp
-            base_score *= damage_ratio
-
-            # 次の攻撃で倒せそうなポケモンを少し評価
-            if pokemon.hp <= 220:
-                base_score += 5000
-
+            base_score *= active_damage / pokemon.hp
         ci = []
         max_score = base_score
         if remain_prize <= base_prize_count:

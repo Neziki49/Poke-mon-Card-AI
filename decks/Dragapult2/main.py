@@ -11,12 +11,11 @@ This deck focuses on setting up multiple knockouts to take at least three Prize 
 """
 
 # Load deck.csv in the dataset
-file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
 
-"""file_path = "deck.csv"
+
+file_path = "deck.csv"
 if not os.path.exists(file_path):
     file_path = "/kaggle_simulations/agent/" + file_path
-"""
 with open(file_path, "r") as file:
     csv = file.read().split("\n")
 my_deck = []
@@ -110,12 +109,14 @@ def pokemon_score(pokemon: Pokemon, is_attack_damage: bool) -> int:
     """Heuristically evaluates the tactical worth of targeting a specific Pokémon on the opponent's field."""
     data = card_table[pokemon.id]
     score = prize_count(pokemon, is_attack_damage) * 1000
-    score += len(pokemon.energies) * 150
-    score += len(pokemon.tools) * 100
+    score += len(pokemon.energies) * 1000
+    score += len(pokemon.tools) * 500
+    if pokemon.hp <= is_attack_damage:
+        score += 5000
     if data.stage2:
-        score += 250
+        score += 3000
     elif data.stage1:
-        score += 130
+        score += 1000
     
     id = pokemon.id
     # Noctowl, Fan Rotom, Archaludon ex, Meowth ex
@@ -458,10 +459,16 @@ def agent(obs_dict: dict) -> list[int]:
     def hand_score(id: int, ignore_count: bool):
         score = 0
         if id == Dreepy:
-            if main_pokemon_count >= 3:
-                score = 1000
+            if main_pokemon_count == 0:
+                score = 60000
+            elif main_pokemon_count == 1:
+                score = 50000
+            elif main_pokemon_count == 2:
+                score = 35000
+            elif main_pokemon_count == 3:
+                score = 15000
             else:
-                score = 18000
+                score = 1000
         elif id == Drakloak:
             if can_evolve_dreepy:
                 score = 20000
@@ -470,20 +477,15 @@ def agent(obs_dict: dict) -> list[int]:
         elif id == Dragapult_ex:
             if no_more_dex:
                 score = UNNECESSARY
-            elif can_evolve_dreepy and hand_counts[Rare_Candy] >= 1 and not no_item:
-                score = 40000
-            elif can_evolve_drakloak:
-                if field_counts[id] == 0:
-                    score = 30000
-                elif field_counts[id] == 1:
-                    score = 10000
-                else:
-                    score = 50
             else:
-                if field_counts[id] >= 2:
-                    score = 50
+                if field_counts[Dragapult_ex] == 0:
+                    score = 70000
+                elif field_counts[Dragapult_ex] == 1:
+                    score = 50000
+                elif field_counts[Dragapult_ex] == 2:
+                    score = 20000
                 else:
-                    score = 2000
+                    score = 1000
         elif id == Fezandipiti_ex:
             if pre_ko:
                 score = 50000

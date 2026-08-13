@@ -11,12 +11,11 @@ This deck focuses on setting up multiple knockouts to take at least three Prize 
 """
 
 # Load deck.csv in the dataset
-file_path = os.path.join(os.path.dirname(__file__), "deck.csv")
 
-"""file_path = "deck.csv"
+
+file_path = "deck.csv"
 if not os.path.exists(file_path):
     file_path = "/kaggle_simulations/agent/" + file_path
-"""
 with open(file_path, "r") as file:
     csv = file.read().split("\n")
 my_deck = []
@@ -444,11 +443,7 @@ def agent(obs_dict: dict) -> list[int]:
                     score += 400
             else:
                 if pokemon.id == Dragapult_ex:
-                    score += 1000
-                    if energy_count == 1:
-                        score += 15000
-                    elif energy_count >= 2:
-                        score += 30000
+                    score += 150
                 elif pokemon.id == Dreepy:
                     score += 100
                 else:
